@@ -1,7 +1,8 @@
+/* index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* You can add additional custom styles below if needed */
-
-
+body {
+  @apply bg-blue-200; /* or any Tailwind color class */
+}
