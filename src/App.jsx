@@ -19,21 +19,21 @@ export const App = () => {
   // Sidebar toggle state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Top skills state
+  // Top skills state & loading state
   const [topSkills, setTopSkills] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const getTopSkills = async () => {
-      // Fetch top skills across 3 pages
-      const skillsData = await fetchTopSkills(6);
+      setLoading(true); // Start loading
+      const skillsData = await fetchTopSkills();
       setTopSkills(skillsData);
+      setLoading(false); // Stop loading after data fetch
     };
     getTopSkills();
   }, []);
-  
 
-  // (3) Prepare data for the Bar chart
-  // topSkills is an array of [skill, count], e.g. [ ["JavaScript", 15], ["Python", 13]... ]
+  // Prepare data for the Bar chart
   const skillLabels = topSkills.map((skill) => skill[0]);
   const skillCounts = topSkills.map((skill) => skill[1]);
 
@@ -64,24 +64,30 @@ export const App = () => {
           {/* Chart 1 - Top 5 Technical Tools */}
           <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
             <h2 className="text-lg font-semibold mb-4">Top 5 Technical Tools</h2>
-            <Bar
-              data={{
-                labels: skillLabels,
-                datasets: [
-                  {
-                    label: "Demand Count",
-                    data: skillCounts,
-                    backgroundColor: "rgba(54, 162, 235, 0.6)",
-                    borderColor: "rgba(54, 162, 235, 1)",
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-              }}
-            />
+
+            {/* Show "Loading data..." while fetching, then display chart */}
+            {loading ? (
+              <p className="text-gray-600 text-lg">Loading data...</p>
+            ) : (
+              <Bar
+                data={{
+                  labels: skillLabels,
+                  datasets: [
+                    {
+                      label: "Demand Count",
+                      data: skillCounts,
+                      backgroundColor: "rgba(54, 162, 235, 0.6)",
+                      borderColor: "rgba(54, 162, 235, 1)",
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                }}
+              />
+            )}
           </div>
 
           {/* Chart 2 */}
