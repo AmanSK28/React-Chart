@@ -21,21 +21,28 @@ export const App = () => {
 
   // Top skills state & loading state
   const [topSkills, setTopSkills] = useState([]);
+  const [jobCount, setJobCount] = useState(0); // Add job count state
   const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const getTopSkills = async () => {
       setLoading(true); // Start loading
-      const skillsData = await fetchTopSkills();
-      setTopSkills(skillsData);
+      const { topSkills, jobCount } = await fetchTopSkills(); // Extract data properly
+      setTopSkills(topSkills);
+      setJobCount(jobCount); // ✅ Store job count
       setLoading(false); // Stop loading after data fetch
     };
     getTopSkills();
   }, []);
+  
 
   // Prepare data for the Bar chart
   const skillLabels = topSkills.map((skill) => skill[0]);
-  const skillCounts = topSkills.map((skill) => skill[1]);
+  const skillCounts = topSkills.map((skill) =>
+    jobCount > 0 ? ((skill[1] / jobCount) * 100).toFixed(2) : 0
+  );
+  
+
 
   return (
     <div className="flex h-screen">
@@ -63,7 +70,9 @@ export const App = () => {
         <div className="grid grid-rows-2 grid-cols-2 gap-4 w-full">
           {/* Chart 1 - Top 5 Technical Tools */}
           <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold mb-4">Top 5 Technical Tools</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              Top 5 Technical Tools Based on {jobCount} Jobs
+            </h2>
 
             {/* Show "Loading data..." while fetching, then display chart */}
             {loading ? (
@@ -74,7 +83,7 @@ export const App = () => {
                   labels: skillLabels,
                   datasets: [
                     {
-                      label: "Demand Count",
+                      label: "Percentage of Jobs (%)",
                       data: skillCounts,
                       backgroundColor: "rgba(54, 162, 235, 0.6)",
                       borderColor: "rgba(54, 162, 235, 1)",

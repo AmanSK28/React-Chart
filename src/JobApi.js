@@ -84,14 +84,18 @@ export async function fetchTopSkills(numPages = 1) {
       }
     }
   
+    console.log("Total jobs fetched:", allJobs.length);
+  
     // Filter out jobs that include any blacklisted keywords in the title or description
     const filteredJobs = allJobs.filter(job => {
-      const description = job.job_description?.toLowerCase() || "";
-      const title = job.job_title?.toLowerCase() || "";
+      const description = (job.job_description || job.description || "").toLowerCase();
+      const title = (job.job_title || job.title || "").toLowerCase();
       return !BLACKLIST_KEYWORDS.some(keyword =>
         description.includes(keyword.toLowerCase()) || title.includes(keyword.toLowerCase())
       );
     });
+  
+    console.log("Jobs after filtering:", filteredJobs.length);
   
     // Initialize counts for each skill in SKILLS_LIST
     const skillCounts = {};
@@ -101,7 +105,7 @@ export async function fetchTopSkills(numPages = 1) {
   
     // Count occurrences of each skill in the filtered job descriptions
     filteredJobs.forEach(job => {
-      const description = job.job_description?.toLowerCase() || "";
+      const description = (job.job_description || job.description || "").toLowerCase();
       SKILLS_LIST.forEach(skill => {
         if (description.includes(skill.toLowerCase())) {
           skillCounts[skill]++;
@@ -109,9 +113,15 @@ export async function fetchTopSkills(numPages = 1) {
       });
     });
   
-    // Sort and return top 5 skills
-    const sortedSkills = Object.entries(skillCounts).sort((a, b) => b[1] - a[1]);
-    return sortedSkills.slice(0, 5);
+    // Sort skills by count and take the top 10
+    const sortedSkills = Object.entries(skillCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+  
+    console.log("Sorted Skills:", sortedSkills);
+  
+    // Return the sorted skills (an array of arrays in the format: [skill, count])
+    return { topSkills: sortedSkills, jobCount: filteredJobs.length };
   
   } catch (error) {
     console.error("Error fetching skills data:", error);
