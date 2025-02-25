@@ -10,10 +10,11 @@ import {
   LinearScale,
   Tooltip,
   Legend,
+  ArcElement, // <-- ArcElement is needed for Doughnut
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 export const App = () => {
   // Sidebar toggle state
@@ -21,28 +22,31 @@ export const App = () => {
 
   // Top skills state & loading state
   const [topSkills, setTopSkills] = useState([]);
-  const [jobCount, setJobCount] = useState(0); // Add job count state
-  const [loading, setLoading] = useState(true); // Loading state
+  const [jobCount, setJobCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [educationCounts, setEducationCounts] = useState({
+    "Bachelor's": 0,
+    "Master's": 0,
+    "PhD": 0,
+  });
 
   useEffect(() => {
     const getTopSkills = async () => {
-      setLoading(true); // Start loading
-      const { topSkills, jobCount } = await fetchTopSkills(); // Extract data properly
+      setLoading(true);
+      const { topSkills, jobCount, educationCounts } = await fetchTopSkills();
       setTopSkills(topSkills);
-      setJobCount(jobCount); // ✅ Store job count
-      setLoading(false); // Stop loading after data fetch
+      setJobCount(jobCount);
+      setEducationCounts(educationCounts);
+      setLoading(false);
     };
     getTopSkills();
   }, []);
-  
 
   // Prepare data for the Bar chart
   const skillLabels = topSkills.map((skill) => skill[0]);
   const skillCounts = topSkills.map((skill) =>
     jobCount > 0 ? ((skill[1] / jobCount) * 100).toFixed(2) : 0
   );
-  
-
 
   return (
     <div className="flex h-screen">
@@ -52,7 +56,6 @@ export const App = () => {
           isSidebarOpen ? "w-64" : "w-16"
         }`}
       >
-        {/* Sidebar Toggle Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="bg-gray-700 w-full p-2 mb-4 rounded"
@@ -74,11 +77,12 @@ export const App = () => {
               Top 5 Technical Tools Based on {jobCount} Jobs
             </h2>
 
-            {/* Show "Loading data..." while fetching, then display chart */}
             {loading ? (
               <p className="text-gray-600 text-lg">Loading data...</p>
             ) : (
               <Bar
+                // Key ensures React re-renders chart when data changes
+                key={JSON.stringify(skillCounts)}
                 data={{
                   labels: skillLabels,
                   datasets: [
@@ -99,10 +103,41 @@ export const App = () => {
             )}
           </div>
 
-          {/* Chart 2 */}
-          <div className="bg-white p-6 rounded-lg shadow-md h-80 flex justify-center items-center">
-            <h2 className="text-lg font-semibold">Chart 2</h2>
-          </div>
+          {/* Education Level Doughnut Chart */}
+          <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col justify-center items-center">
+            <h2 className="text-lg font-semibold mb-4">
+              Proportion of Sought After Level of Education
+            </h2>
+            {loading ? (
+              <p className="text-gray-600 text-lg">Loading data...</p>
+            ) : (
+            <div className="w-full h-full flex justify-center items-center">
+              <Doughnut
+                // Key ensures React re-renders chart when data changes
+                key={JSON.stringify(educationCounts)}
+                data={{
+                  labels: Object.keys(educationCounts),
+                  datasets: [
+                    {
+                      data: Object.values(educationCounts),
+                      backgroundColor: ["#FFCE56", "#36A2EB", "#4BC0C0"],
+                      hoverBackgroundColor: ["#FFB74D", "#64B5F6", "#80CBC4"],
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "top",
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
+        </div>
 
           {/* Chart 3 */}
           <div className="bg-white p-6 rounded-lg shadow-md h-80 flex justify-center items-center">

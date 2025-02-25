@@ -38,6 +38,13 @@ const SKILLS_LIST = [
   "Vibe Coding"
 ];
 
+const EDUCATION_LEVELS = {
+  "Bachelor's": 0,
+  "Master's": 0,
+  "PhD": 0
+};
+
+
 // Define the job fields you want to search
 const JOB_FIELDS = [
   "software engineering",
@@ -102,6 +109,10 @@ export async function fetchTopSkills(numPages = 1) {
     SKILLS_LIST.forEach(skill => {
       skillCounts[skill] = 0;
     });
+
+    // Initialize counts for education levels
+let educationCounts = { ...EDUCATION_LEVELS };
+
   
     // Count occurrences of each skill in the filtered job descriptions
     filteredJobs.forEach(job => {
@@ -111,6 +122,10 @@ export async function fetchTopSkills(numPages = 1) {
           skillCounts[skill]++;
         }
       });
+      // Count mentions of education levels
+      if (description.includes("bachelor")) educationCounts["Bachelor's"]++;
+      if (description.includes("master")) educationCounts["Master's"]++;
+      if (description.includes("phd") || description.includes("doctorate")) educationCounts["PhD"]++;
     });
   
     // Sort skills by count and take the top 10
@@ -121,7 +136,12 @@ export async function fetchTopSkills(numPages = 1) {
     console.log("Sorted Skills:", sortedSkills);
   
     // Return the sorted skills (an array of arrays in the format: [skill, count])
-    return { topSkills: sortedSkills, jobCount: filteredJobs.length };
+    return { 
+      topSkills: sortedSkills, 
+      jobCount: filteredJobs.length, 
+      educationCounts 
+    };
+    
   
   } catch (error) {
     console.error("Error fetching skills data:", error);
