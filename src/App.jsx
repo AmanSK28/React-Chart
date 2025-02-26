@@ -118,8 +118,10 @@ export const App = () => {
                 data={{
                   labels: Object.keys(educationCounts),
                   datasets: [
-                    {
-                      data: Object.values(educationCounts),
+                      {
+                        data: Object.values(educationCounts).map((val) =>
+                          jobCount > 0 ? Number(((val / jobCount) * 100).toFixed(2)) : 0
+                        ),
                       backgroundColor: ["#FFCE56", "#36A2EB", "#4BC0C0"],
                       hoverBackgroundColor: ["#FFB74D", "#64B5F6", "#80CBC4"],
                     },
@@ -132,12 +134,27 @@ export const App = () => {
                     legend: {
                       position: "top",
                     },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          let label = context.label || "";
+                          if (label) {
+                            label += ": ";
+
+                          }
+                          if (context.parsed !== null) {
+                            label += context.parsed + "%";
+                        }
+                        return label;
+                      },
+                    },
                   },
-                }}
-              />
-            </div>
-          )}
-        </div>
+                },
+              }}
+            />
+          </div>
+        )}
+      </div>
 
           {/* Chart 3 */}
           <div className="bg-white p-6 rounded-lg shadow-md h-80 flex justify-center items-center">
