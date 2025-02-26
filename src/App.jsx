@@ -106,7 +106,7 @@ export const App = () => {
           {/* Education Level Doughnut Chart */}
           <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col justify-center items-center">
             <h2 className="text-lg font-semibold mb-4">
-              Proportion of Sought After Level of Education
+                Level of Education Based on {jobCount} Jobs
             </h2>
             {loading ? (
               <p className="text-gray-600 text-lg">Loading data...</p>
