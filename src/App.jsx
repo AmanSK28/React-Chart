@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./index.css";
 import "./App.css";
 import {
@@ -13,42 +13,32 @@ import {
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
 import UKMapChart from "./UKMapChart";
+import { fetchTopSkills } from "./JobApi";
 
-// Register chart.js components
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 export const App = () => {
-  // Sidebar toggle state
+  // Sidebar toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Hardcoded data for demonstration
-  // 1) Top 5 Skills
-  const [topSkills] = useState([
-    ["Python", 400],
-    ["SQL", 350],
-    ["React", 300],
-    ["AWS", 200],
-    ["Docker", 150],
-  ]);
-  // Total job count
-  const [jobCount] = useState(1000);
+  // Data states
+  const [topSkills, setTopSkills] = useState([]);
+  const [jobCount, setJobCount] = useState(0);
+  const [educationCounts, setEducationCounts] = useState({});
+  const [regionData, setRegionData] = useState({});
 
-  // 2) Education levels
-  const [educationCounts] = useState({
-    "Bachelor's": 600,
-    "Master's": 300,
-    "PhD": 100,
-  });
+  useEffect(() => {
+    fetchTopSkills().then((data) => {
+      setTopSkills(data.topSkills);
+      setJobCount(data.jobCount);
+      setEducationCounts(data.educationCounts);
+      setRegionData(data.regionPercentages);
+    }).catch((error) => {
+      console.error("Error fetching skills data:", error);
+    });
+  }, []);
 
-  // 3) Updated region data for UK
-  const [regionData] = useState({
-    ENG: 58.06, // England - 58.06% of jobs
-    SCT: 13.55, // Scotland - 13.55% of jobs
-    WLS: 4.52,  // Wales - 4.52% of jobs
-    NIR: 0.65,  // Northern Ireland - 0.65% of jobs
-  });
-
-  // Chart data prep
+  // Prepare data for Bar chart
   const skillLabels = topSkills.map((skill) => skill[0]);
   const skillPercentages = topSkills.map((skill) =>
     jobCount > 0 ? ((skill[1] / jobCount) * 100).toFixed(2) : 0
@@ -71,9 +61,13 @@ export const App = () => {
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 p-6 ${isSidebarOpen ? "w-3/4" : "w-full"}`}>
+      <div
+        className={`transition-all duration-300 p-6 ${
+          isSidebarOpen ? "w-3/4" : "w-full"
+        }`}
+      >
         <div className="grid grid-rows-2 grid-cols-2 gap-4 w-full">
-          {/* Chart 1 - Top Skills Bar Chart */}
+          {/* Chart 1 - Top Skills */}
           <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
             <h2 className="text-lg font-semibold mb-4">
               Top 5 Technical Tools Based on {jobCount} Jobs
@@ -98,7 +92,7 @@ export const App = () => {
             />
           </div>
 
-          {/* Chart 2 - Education Level Doughnut Chart */}
+          {/* Chart 2 - Education Level */}
           <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col justify-center items-center">
             <h2 className="text-lg font-semibold mb-4">
               Level of Education Based on {jobCount} Jobs
@@ -142,9 +136,11 @@ export const App = () => {
             </div>
           </div>
 
-          {/* Chart 3 - UK Map with Job Distribution */}
+          {/* Chart 3 - UK Map */}
           <div className="bg-white p-6 rounded-lg shadow-md h-80 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold mb-4">Job Distribution Across the UK</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              Job Distribution Across the UK
+            </h2>
             <UKMapChart regionData={regionData} />
           </div>
         </div>
