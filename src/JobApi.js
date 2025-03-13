@@ -1,5 +1,3 @@
-// src/JobApi.js
-
 const SKILLS_LIST = [
   "JavaScript", "Python", "Java", "C++", "C#", "Go", "Swift", "Rust", "Kotlin",
   "TypeScript", "Ruby", "PHP", "Scala", "Perl", "Haskell", "Lua", "Dart",
@@ -70,18 +68,22 @@ const BLACKLIST_KEYWORDS = [
   "human resources"
 ];
 
-export async function fetchTopSkills(numPages = 1) {
+export async function fetchTopSkills(numPages = 1, selectedRole = "all", selectedRegion = "all") {
   try {
     const rapidApiKey = import.meta.env.VITE_RAPIDAPI_KEY;
     const rapidApiHost = import.meta.env.VITE_RAPIDAPI_HOST;
 
     let allJobs = [];
 
-    // Fetch jobs for each job field and page
-    for (const jobField of JOB_FIELDS) {
+    // Determine which roles to fetch based on the selectedRole
+    const rolesToFetch = selectedRole === "all" ? JOB_FIELDS : [selectedRole];
+
+    // Fetch jobs for each role and page
+    for (const jobField of rolesToFetch) {
       for (let page = 1; page <= numPages; page++) {
-        // Make query broader by including "in united kingdom"
-        const query = encodeURIComponent(`${jobField} in united kingdom`);
+        // Use the selectedRegion if not "all"; otherwise default to "united kingdom"
+        const regionQuery = selectedRegion === "all" ? "united kingdom" : selectedRegion;
+        const query = encodeURIComponent(`${jobField} in ${regionQuery}`);
         const url = `https://jsearch.p.rapidapi.com/search?query=${query}&country=uk&page=${page}`;
 
         const response = await fetch(url, {

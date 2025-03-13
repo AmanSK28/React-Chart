@@ -14,7 +14,7 @@ import {
 import { Bar, Doughnut } from "react-chartjs-2";
 import UKMapChart from "./UKMapChart";
 import { fetchTopSkills } from "./JobApi";
-import Logo from "./Logo";  // <-- Added Logo import
+import Logo from "./Logo";  // <-- Logo import
 
 // Register chart.js components
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
@@ -23,14 +23,19 @@ export const App = () => {
   // Sidebar toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // Dropdown state
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [selectedRegion, setSelectedRegion] = useState("all");
+
   // Data states populated from the API
   const [topSkills, setTopSkills] = useState([]);
   const [jobCount, setJobCount] = useState(0);
   const [educationCounts, setEducationCounts] = useState({});
   const [regionData, setRegionData] = useState({});
 
+  // Fetch data whenever selectedRole or selectedRegion changes
   useEffect(() => {
-    fetchTopSkills()
+    fetchTopSkills(1, selectedRole, selectedRegion)
       .then((data) => {
         setTopSkills(data.topSkills);
         setJobCount(data.jobCount);
@@ -40,7 +45,7 @@ export const App = () => {
       .catch((error) => {
         console.error("Error fetching skills data:", error);
       });
-  }, []);
+  }, [selectedRole, selectedRegion]);
 
   // Prepare data for Bar chart
   const skillLabels = topSkills.map((skill) => skill[0]);
@@ -62,21 +67,109 @@ export const App = () => {
         >
           {isSidebarOpen ? "<<" : ">>"}
         </button>
+
+        {/* Only show dropdowns when sidebar is open */}
+        {isSidebarOpen && (
+          <div className="space-y-6">
+            {/* Dropdown for Role Selection */}
+            <div>
+              <label
+                className="block text-base font-medium mb-2"
+                htmlFor="roleSelect"
+              >
+                Select Role
+              </label>
+              <div className="relative">
+                <select
+                  id="roleSelect"
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All</option>
+                  <option value="software engineering">Software Engineering</option>
+                  <option value="software developer">Software Developer</option>
+                  <option value="frontend developer">Frontend Developer</option>
+                  <option value="full stack developer">Full Stack Developer</option>
+                  <option value="dev ops engineer">Dev Ops Engineer</option>
+                </select>
+                {/* Optional custom arrow icon */}
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.24 3.67a.75.75 0 01-.98 0l-4.24-3.67a.75.75 0 01.02-1.06z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Dropdown for Region Selection */}
+            <div>
+              <label
+                className="block text-base font-medium mb-2"
+                htmlFor="regionSelect"
+              >
+                Select Region
+              </label>
+              <div className="relative">
+                <select
+                  id="regionSelect"
+                  value={selectedRegion}
+                  onChange={(e) => setSelectedRegion(e.target.value)}
+                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All</option>
+                  <option value="england">England</option>
+                  <option value="scotland">Scotland</option>
+                  <option value="wales">Wales</option>
+                  <option value="northern ireland">Northern Ireland</option>
+                </select>
+                {/* Optional custom arrow icon */}
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.24 3.67a.75.75 0 01-.98 0l-4.24-3.67a.75.75 0 01.02-1.06z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      {/* Navigation in top-right: Logo + buttons */}
+
+      {/* 
+        Navigation in top-left: 
+        Moved from right-10 to left-10 
+        Added "Repository" button 
+      */}
       <div className="absolute top-0 right-10 m-10 flex items-center space-x-4">
         <Logo />
         <a
           href="/"
-          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded hover:opacity-90 transition"
-
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
+                     rounded transition duration-300 transform hover:scale-105"
         >
           Dashboard
         </a>
         <a
+          href="https://github.com/AmanSK28/React-Chart"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
+                     rounded transition duration-300 transform hover:scale-105"
+        >
+          Repository
+        </a>
+        <a
           href="/about.html"
-          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded hover:opacity-90 transition"
-
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
+                     rounded transition duration-300 transform hover:scale-105"
         >
           About
         </a>
