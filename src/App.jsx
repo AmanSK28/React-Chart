@@ -63,10 +63,23 @@ export const App = () => {
           {isSidebarOpen ? "<<" : ">>"}
         </button>
       </div>
-
-       {/* Logo in top-right corner */}
-       <div className="absolute top-0 right-10 m-10">
+      {/* Navigation in top-right: Logo + buttons */}
+      <div className="absolute top-0 right-10 m-10 flex items-center space-x-4">
         <Logo />
+        <a
+          href="/"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded hover:opacity-90 transition"
+
+        >
+          Dashboard
+        </a>
+        <a
+          href="/about.html"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded hover:opacity-90 transition"
+
+        >
+          About
+        </a>
       </div>
 
       {/* Main Content with a top margin for future menu */}
