@@ -12,7 +12,7 @@ import {
   ArcElement,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import UKMapChart from "./UKMapChart";
+import UKMapChart from "./UKMapchart";
 import { fetchTopSkills } from "./JobApi";
 import Logo from "./Logo";  // <-- Logo import
 
