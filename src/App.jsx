@@ -16,7 +16,7 @@ import UKMapChart from "./UKMapChart";
 import { fetchTopSkills } from "./JobApi";
 import Logo from "./Logo";  // <-- Logo import
 
-// Register chart.js components
+// Register chart.js component
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 export const App = () => {
