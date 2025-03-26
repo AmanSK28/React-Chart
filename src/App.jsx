@@ -33,17 +33,23 @@ export const App = () => {
   const [educationCounts, setEducationCounts] = useState({});
   const [regionData, setRegionData] = useState({});
 
+  // Loading state
+  const [loading, setLoading] = useState(true);
+
   // Fetch data whenever selectedRole or selectedRegion changes
   useEffect(() => {
+    setLoading(true);
     fetchTopSkills(1, selectedRole, selectedRegion)
       .then((data) => {
         setTopSkills(data.topSkills);
         setJobCount(data.jobCount);
         setEducationCounts(data.educationCounts);
         setRegionData(data.regionPercentages);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching skills data:", error);
+        setLoading(false);
       });
   }, [selectedRole, selectedRegion]);
 
@@ -52,6 +58,9 @@ export const App = () => {
   const skillPercentages = topSkills.map((skill) =>
     jobCount > 0 ? ((skill[1] / jobCount) * 100).toFixed(2) : 0
   );
+
+  // Condition: Show "Loading..." if still loading OR if jobCount is 0 (i.e., no data yet)
+  const isDataLoading = loading || jobCount === 0;
 
   return (
     <div className="flex min-h-screen w-full overflow-x-hidden">
@@ -84,8 +93,7 @@ export const App = () => {
                   id="roleSelect"
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All</option>
                   <option value="software engineering">Software Engineering</option>
@@ -94,7 +102,6 @@ export const App = () => {
                   <option value="full stack developer">Full Stack Developer</option>
                   <option value="dev ops engineer">Dev Ops Engineer</option>
                 </select>
-                {/* Optional custom arrow icon */}
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                   <svg
                     className="w-4 h-4 text-gray-300"
@@ -120,8 +127,7 @@ export const App = () => {
                   id="regionSelect"
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none 
-                             focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full p-3 bg-gray-700 text-white rounded appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All</option>
                   <option value="england">England</option>
@@ -129,7 +135,6 @@ export const App = () => {
                   <option value="wales">Wales</option>
                   <option value="northern ireland">Northern Ireland</option>
                 </select>
-                {/* Optional custom arrow icon */}
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                   <svg
                     className="w-4 h-4 text-gray-300"
@@ -145,117 +150,129 @@ export const App = () => {
         )}
       </div>
 
-      {/* 
-        Navigation in top-left: 
-        Moved from right-10 to left-10 
-        Added "Repository" button 
-      */}
+      {/* Navigation in top-right */}
       <div className="absolute top-0 right-10 m-10 flex items-center space-x-4">
+        {/* Logo remains */}
         <Logo />
         <a
           href="/"
-          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
-                     rounded transition duration-300 transform hover:scale-105"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded transition duration-300 transform hover:scale-105"
         >
           Dashboard
         </a>
         <a
           href="https://github.com/AmanSK28/React-Chart"
-          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
-                     rounded transition duration-300 transform hover:scale-105"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded transition duration-300 transform hover:scale-105"
         >
           Repository
         </a>
         <a
-          href="/about.html"
-          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 
-                     rounded transition duration-300 transform hover:scale-105"
+          href="/about"
+          className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-4 py-2 rounded transition duration-300 transform hover:scale-105"
         >
           About
         </a>
       </div>
 
-      {/* Main Content with a top margin for future menu */}
+      {/* Main Content */}
       <div className="-mt-[-100px] p-6 flex-1">
         <div className="grid grid-rows-2 grid-cols-2 gap-4 w-full">
           {/* Chart 1 - Top Skills Bar Chart */}
-          <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold mb-4">
-              Top 5 Technical Tools Based on {jobCount} Jobs
-            </h2>
-            <Bar
-              data={{
-                labels: skillLabels,
-                datasets: [
-                  {
-                    label: "Percentage of Jobs (%)",
-                    data: skillPercentages,
-                    backgroundColor: "rgba(54, 162, 235, 0.6)",
-                    borderColor: "rgba(54, 162, 235, 1)",
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-              }}
-            />
-          </div>
-
-          {/* Chart 2 - Education Level Doughnut Chart */}
-          <div className="bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold mb-4">
-              Level of Education Based on {jobCount} Jobs
-            </h2>
-            <div className="w-full h-full flex justify-center items-center">
-              <Doughnut
+          {isDataLoading ? (
+            <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex items-center justify-center">
+              <span className="text-2xl">Loading...</span>
+            </div>
+          ) : (
+            <div className="col-span-2 bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
+              <h2 className="text-lg font-semibold mb-4">
+                Top 5 Technical Tools Based on {jobCount} Jobs
+              </h2>
+              <Bar
                 data={{
-                  labels: Object.keys(educationCounts),
+                  labels: skillLabels,
                   datasets: [
                     {
-                      data: Object.values(educationCounts).map((val) =>
-                        jobCount > 0 ? Number(((val / jobCount) * 100).toFixed(2)) : 0
-                      ),
-                      backgroundColor: ["#FFCE56", "#36A2EB", "#4BC0C0"],
-                      hoverBackgroundColor: ["#FFB74D", "#64B5F6", "#80CBC4"],
+                      label: "Percentage of Jobs (%)",
+                      data: skillPercentages,
+                      backgroundColor: "rgba(54, 162, 235, 0.6)",
+                      borderColor: "rgba(54, 162, 235, 1)",
+                      borderWidth: 1,
                     },
                   ],
                 }}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: "top" },
-                    tooltip: {
-                      callbacks: {
-                        label: function (context) {
-                          let label = context.label || "";
-                          if (label) {
-                            label += ": ";
-                          }
-                          if (context.parsed !== null) {
-                            label += context.parsed + "%";
-                          }
-                          return label;
-                        },
-                      },
-                    },
-                  },
                 }}
               />
             </div>
-          </div>
+          )}
+
+          {/* Chart 2 - Education Level Doughnut Chart */}
+          {isDataLoading ? (
+            <div className="bg-white p-6 rounded-lg shadow-md h-96 flex items-center justify-center">
+              <span className="text-2xl">Loading...</span>
+            </div>
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
+              <h2 className="text-lg font-semibold mb-4">
+                Level of Education Based on {jobCount} Jobs
+              </h2>
+              <div className="w-full h-full flex justify-center items-center">
+                <Doughnut
+                  data={{
+                    labels: Object.keys(educationCounts),
+                    datasets: [
+                      {
+                        data: Object.values(educationCounts).map((val) =>
+                          jobCount > 0 ? Number(((val / jobCount) * 100).toFixed(2)) : 0
+                        ),
+                        backgroundColor: ["#FFCE56", "#36A2EB", "#4BC0C0"],
+                        hoverBackgroundColor: ["#FFB74D", "#64B5F6", "#80CBC4"],
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: "top" },
+                      tooltip: {
+                        callbacks: {
+                          label: function (context) {
+                            let label = context.label || "";
+                            if (label) {
+                              label += ": ";
+                            }
+                            if (context.parsed !== null) {
+                              label += context.parsed + "%";
+                            }
+                            return label;
+                          },
+                        },
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Chart 3 - UK Map with Job Distribution */}
-          <div className="bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold mb-4">
-              Job Distribution Across the UK Based on {jobCount} Jobs
-            </h2>
-            <div className="w-full h-full">
-              <UKMapChart regionData={regionData} />
+          {isDataLoading ? (
+            <div className="bg-white p-6 rounded-lg shadow-md h-96 flex items-center justify-center">
+              <span className="text-2xl">Loading...</span>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow-md h-96 flex flex-col justify-center items-center">
+              <h2 className="text-lg font-semibold mb-4">
+                Job Distribution Across the UK Based on {jobCount} Jobs
+              </h2>
+              <div className="w-full h-full">
+                <UKMapChart regionData={regionData} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
