@@ -3,63 +3,55 @@ import React from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { geoCentroid } from "d3-geo";
 
-// Path to your UK GeoJSON file (in public/ folder)
 const geoUrl = "/uk-region.geojson";
 
-// Distinct colors for each region
 const regionColors = {
-  ENG: "#1f77b4", // Blue
-  SCT: "#ff7f0e", // Orange
-  WLS: "#2ca02c", // Green
-  NIR: "#d62728", // Red
-  default: "#ccc" // fallback color
+  ENG: "#1f77b4",
+  SCT: "#ff7f0e",
+  WLS: "#2ca02c",
+  NIR: "#d62728",
+  default: "#ccc",
 };
 
+function LegendItem({ color, label }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: color }} />
+      <span className="text-xs sm:text-sm text-gray-800">{label}</span>
+    </div>
+  );
+}
+
 export default function UKMapChart({ regionData }) {
-  // regionData example: { ENG: 60, SCT: 20, WLS: 15, NIR: 5 }
+  const isSmall = typeof window !== "undefined" && window.innerWidth < 640;
+
+  // Bigger overall (tuned to still fit phones/tablets)
+  const projectionScale = isSmall ? 1350 : 1750;
 
   return (
-    // We use flex-col so we can have a legend on top and the map below
-    <div className="flex flex-col w-full h-full">
-      {/* Legend row at the top (no container size or map size changed) */}
-      <div className="flex flex-row justify-center items-center mb-0">
-        {/* England Legend */}
-        <div className="flex items-center mr-4">
-          <div className="w-4 h-4 mr-1" style={{ backgroundColor: regionColors.ENG }} />
-          <span>England</span>
-        </div>
-        {/* Scotland Legend */}
-        <div className="flex items-center mr-4">
-          <div className="w-4 h-4 mr-1" style={{ backgroundColor: regionColors.SCT }} />
-          <span>Scotland</span>
-        </div>
-        {/* Wales Legend */}
-        <div className="flex items-center mr-4">
-          <div className="w-4 h-4 mr-1" style={{ backgroundColor: regionColors.WLS }} />
-          <span>Wales</span>
-        </div>
-        {/* Northern Ireland Legend */}
-        <div className="flex items-center">
-          <div className="w-4 h-4 mr-1" style={{ backgroundColor: regionColors.NIR }} />
-          <span>N. Ireland</span>
-        </div>
+    <div className="flex flex-col w-full h-full min-w-0">
+      {/* Legend wraps so it never overlaps */}
+      <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 pb-2">
+        <LegendItem color={regionColors.ENG} label="England" />
+        <LegendItem color={regionColors.SCT} label="Scotland" />
+        <LegendItem color={regionColors.WLS} label="Wales" />
+        <LegendItem color={regionColors.NIR} label="N. Ireland" />
       </div>
 
-      {/* Map container fills the remaining space */}
-      <div className="flex-1 relative -mt-[95px]">
-        {/* Keep your rotation and scale unchanged */}
-        <div className="transform rotate-[112deg] origin-center w-full h-full">
+      {/* Map takes remaining space */}
+      <div className="relative w-full min-w-0 flex-1">
+        <div className="w-full h-full transform rotate-[112deg] origin-center">
           <ComposableMap
             style={{ width: "100%", height: "100%" }}
             projection="geoMercator"
-            projectionConfig={{ scale: 1500, center: [-2, 55] }}
+            projectionConfig={{ scale: projectionScale, center: [-2, 55] }}
           >
             <Geographies geography={geoUrl}>
               {({ geographies, projection }) =>
                 geographies.map((geo) => {
-                  // "CTRY21NM" property => "England", "Scotland", "Wales", "Northern Ireland"
                   const regionName = geo.properties.CTRY21NM;
                   let regionKey = "";
+
                   switch (regionName) {
                     case "England":
                       regionKey = "ENG";
@@ -77,11 +69,11 @@ export default function UKMapChart({ regionData }) {
                       regionKey = "";
                   }
 
-                  // Color & percentage logic
-                  const value = regionKey ? parseFloat(regionData[regionKey]) || 0 : 0;
+                  const value = regionKey ? parseFloat(regionData?.[regionKey]) || 0 : 0;
                   const fillColor = regionKey
                     ? regionColors[regionKey] || regionColors.default
                     : regionColors.default;
+
                   const centroid = projection(geoCentroid(geo));
 
                   return (
@@ -96,6 +88,7 @@ export default function UKMapChart({ regionData }) {
                           pressed: { outline: "none" },
                         }}
                       />
+
                       {centroid && value > 0 && (
                         <text
                           x={centroid[0]}
@@ -103,7 +96,7 @@ export default function UKMapChart({ regionData }) {
                           textAnchor="middle"
                           alignmentBaseline="middle"
                           style={{
-                            fontSize: "12px",
+                            fontSize: isSmall ? "12px" : "14px",
                             fill: "#000",
                             pointerEvents: "none",
                             fontWeight: "bold",
